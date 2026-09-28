@@ -1,3 +1,7 @@
+> **VANTEAM fork.** Форк [1c-syntax/bsl-language-server](https://github.com/1c-syntax/bsl-language-server)
+> на базе релиза v1.0.7, рабочая ветка `vanteam-bsl-1.1`. Назначение, изменения относительно upstream и сборка —
+> [docs/vanteam](docs/vanteam/README.md). Ниже — оригинальный README проекта.
+
 # BSL Language Server
 
 [![Actions Status](https://github.com/1c-syntax/bsl-language-server/workflows/Java%20CI/badge.svg)](https://github.com/1c-syntax/bsl-language-server/actions)

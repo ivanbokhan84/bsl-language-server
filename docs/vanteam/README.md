@@ -1,0 +1,94 @@
+# VANTEAM BSL Language Server
+
+Форк [1c-syntax/bsl-language-server](https://github.com/1c-syntax/bsl-language-server) для статической
+проверки кода 1С:Предприятие 8 в проектах VANTEAM. Цель — собственные диагностики и изменения
+производительности, которых нет в upstream, при полной совместимости с исходным форматом отчётов
+и конфигурацией `.bsl-language-server.json`.
+
+| | |
+|---|---|
+| Базовая версия | [v1.0.7](https://github.com/1c-syntax/bsl-language-server/releases/tag/v1.0.7) (`master`, коммит `f377f95ae`) |
+| Рабочая ветка | `vanteam-bsl-1.1` |
+| Лицензия кода | LGPL-3.0-or-later, как у upstream ([COPYING.md](../../COPYING.md)) |
+| Лицензия текстов в `docs/vanteam` | [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.ru) |
+| Статус | ранняя стадия: изменения кода в разработке, выпусков нет |
+
+## Зачем форк
+
+BSL Language Server 1.0.7 при каждом запуске заново разбирает синтакс-помощник установленной платформы 1С.
+На проверке одного модуля это 83% процессорного времени, а общая стоимость запуска по сравнению с 0.29.0
+выросла в 2,6–3,5 раза по CPU и в 1,9–2,4 раза по времени. Штатного кэша между запусками нет, настройкой
+его не включить. Подробный разбор с замерами — в статье
+[«Быстрее и честнее: ускорение проверки BSL-кода»](bsl-check-optimization.md).
+
+Форк нужен, чтобы:
+
+- сохранять разобранный контекст платформы между запусками (постоянный кэш с проверкой версии платформы,
+  JAR и Java);
+- в режиме `--analyze` с полным контекстом каталога считать диагностики только для целевых файлов;
+- добавлять диагностики под стандарты разработки VANTEAM, которые не подходят для upstream.
+
+Каждое изменение проверяется полной сверкой объектов диагностик с upstream на одном и том же коде:
+ускорение не должно менять находки.
+
+## Изменения относительно upstream
+
+| Изменение | Статус |
+|---|---|
+| Описание форка и статья о стоимости проверки (`docs/vanteam`) | в ветке |
+| Постоянный кэш разобранного синтакс-помощника | в разработке |
+| Отключение отправки ошибок в Sentry проекта upstream в сборках форка | в разработке |
+
+Реестр изменений ведётся в этом файле. Каждое изменение — отдельный коммит поверх тега upstream,
+поэтому при обновлении базовой версии коммиты переносятся по одному.
+
+## Сборка
+
+Требуется JDK 21. Gradle подтягивается через wrapper.
+
+```bash
+git clone -b vanteam-bsl-1.1 https://github.com/ivanbokhan84/bsl-language-server.git
+cd bsl-language-server
+./gradlew bootJar          # Windows: gradlew.bat bootJar
+```
+
+Исполняемый JAR — `build/libs/bsl-language-server-<версия>-exec.jar`. Полная сборка с тестами — `./gradlew build`.
+Тесты запускаются параллельными JVM по 3 ГБ кучи: на машине с небольшим объёмом памяти
+число форков ограничивается свойством `-PmaxParallelForks=2`.
+
+## Использование
+
+Командная строка и формат отчётов совпадают с upstream:
+
+```bash
+java -jar bsl-language-server-<версия>-exec.jar --analyze --srcDir <каталог> --reporter json --silent
+```
+
+Для коротких CLI-запусков рекомендуем флаги JVM `-XX:TieredStopAtLevel=1 -XX:ActiveProcessorCount=4`:
+на 1.0.7 они снижают CPU на 56–59% при тех же диагностиках (см. статью, раздел 8).
+Документация по настройкам и диагностикам — на [сайте upstream](https://1c-syntax.github.io/bsl-language-server).
+
+## Обновление базовой версии
+
+```bash
+git remote add upstream https://github.com/1c-syntax/bsl-language-server.git
+git fetch upstream --tags
+git rebase --onto vX.Y.Z v1.0.7 vanteam-bsl-1.1
+```
+
+После переноса — полная сборка с тестами и сверка диагностик на эталонном корпусе.
+
+## Благодарности
+
+Проект целиком основан на работе команды [1c-syntax](https://github.com/1c-syntax) и участников BSL Language Server.
+Изменения общего назначения мы стараемся предлагать в upstream.
+
+---
+
+## English summary
+
+A fork of [BSL Language Server](https://github.com/1c-syntax/bsl-language-server) (LGPL-3.0-or-later) based on
+release v1.0.7. Goal: performance and custom diagnostics for 1C:Enterprise projects while keeping the
+report format and configuration fully compatible. The main target is a persistent cache of the parsed
+1C platform help: in 1.0.7 it is re-parsed on every CLI run and takes ~83% of CPU for a single-module check.
+Texts in `docs/vanteam` are licensed under CC BY 4.0.
