@@ -62,7 +62,7 @@ class PlatformContextProviderFactoryTest {
   @Test
   void create_returnsEmpty_whenPropertyDisabled_withoutTouchingConfiguration() throws IOException {
     var configuration = mock(LanguageServerConfiguration.class);
-    var factory = new PlatformContextProviderFactory(configuration);
+    var factory = new PlatformContextProviderFactory(configuration, Optional.empty());
     ReflectionTestUtils.setField(factory, ENABLED_FIELD, false);
 
     Optional<ContextProvider> result = factory.create();
@@ -79,7 +79,7 @@ class PlatformContextProviderFactoryTest {
     when(options.isEnabled()).thenReturn(false);
 
     try (MockedStatic<PlatformContextGrabber> grabbers = mockStatic(PlatformContextGrabber.class)) {
-      var factory = new PlatformContextProviderFactory(configuration);
+      var factory = new PlatformContextProviderFactory(configuration, Optional.empty());
       ReflectionTestUtils.setField(factory, ENABLED_FIELD, true);
 
       Optional<ContextProvider> result = factory.create();
@@ -108,7 +108,7 @@ class PlatformContextProviderFactoryTest {
     try (MockedStatic<PlatformContextGrabber> grabbers = mockStatic(PlatformContextGrabber.class)) {
       grabbers.when(PlatformContextGrabber::autoDetect).thenReturn(grabber);
 
-      var factory = new PlatformContextProviderFactory(configuration);
+      var factory = new PlatformContextProviderFactory(configuration, Optional.empty());
       ReflectionTestUtils.setField(factory, ENABLED_FIELD, true);
 
       Optional<ContextProvider> result = factory.create();
@@ -138,7 +138,7 @@ class PlatformContextProviderFactoryTest {
     try (MockedStatic<PlatformContextGrabber> grabbers = mockStatic(PlatformContextGrabber.class)) {
       grabbers.when(() -> PlatformContextGrabber.fromPlatformBin(eq(binPath))).thenReturn(grabber);
 
-      var factory = new PlatformContextProviderFactory(configuration);
+      var factory = new PlatformContextProviderFactory(configuration, Optional.empty());
       ReflectionTestUtils.setField(factory, ENABLED_FIELD, true);
 
       Optional<ContextProvider> result = factory.create();
@@ -164,7 +164,7 @@ class PlatformContextProviderFactoryTest {
     try (MockedStatic<PlatformContextGrabber> grabbers = mockStatic(PlatformContextGrabber.class)) {
       grabbers.when(PlatformContextGrabber::autoDetect).thenReturn(grabber);
 
-      var factory = new PlatformContextProviderFactory(configuration);
+      var factory = new PlatformContextProviderFactory(configuration, Optional.empty());
       ReflectionTestUtils.setField(factory, ENABLED_FIELD, true);
 
       Optional<ContextProvider> result = factory.create();

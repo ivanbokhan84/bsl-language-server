@@ -27,10 +27,12 @@ import com.github._1c_syntax.bsl.languageserver.configuration.LanguageServerConf
 import com.github._1c_syntax.bsl.languageserver.infrastructure.WorkspaceScope;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.Optional;
 
 /**
@@ -43,6 +45,9 @@ import java.util.Optional;
  * Stateless — кэш живёт в {@link BslContextHolder}. Здесь только factory,
  * чтобы инкапсулировать статическую фабрику {@link PlatformContextGrabber}
  * в Spring-компонент.
+ * <p>
+ * Если передан {@link PlatformContextCache}, провайдер сначала ищется в нём, а только что
+ * разобранный провайдер сохраняется в него; {@link Optional#empty()} — работа без кэша.
  */
 @Slf4j
 @Component
@@ -51,6 +56,7 @@ import java.util.Optional;
 public class PlatformContextProviderFactory {
 
   private final LanguageServerConfiguration configuration;
+  private final Optional<PlatformContextCache> cache;
 
   /**
    * Включение загрузки платформенного контекста (1С синтакс-помощник).
@@ -61,7 +67,8 @@ public class PlatformContextProviderFactory {
   private boolean platformContextEnabled;
 
   /**
-   * Создаёт новый {@link ContextProvider}, прочитав HBK-файлы платформы.
+   * Создаёт новый {@link ContextProvider}, прочитав HBK-файлы платформы или запись
+   * {@link PlatformContextCache} с тем же ключом.
    *
    * @return полностью инициализированный провайдер, либо {@link Optional#empty()},
    *   если платформа не найдена / HBK не открылся
@@ -78,6 +85,11 @@ public class PlatformContextProviderFactory {
       return Optional.empty();
     }
     var binPath = platformOptions.getBinPath();
+    var cached = loadCached(binPath);
+    if (cached.isPresent()) {
+      logLoaded(cached.get());
+      return cached;
+    }
     var grabber = binPath != null
       ? PlatformContextGrabber.fromPlatformBin(binPath)
       : PlatformContextGrabber.autoDetect();
@@ -86,8 +98,29 @@ public class PlatformContextProviderFactory {
     if (provider == null) {
       return Optional.empty();
     }
+    logLoaded(provider);
+    storeCached(binPath, provider);
+    return Optional.of(provider);
+  }
+
+  private Optional<ContextProvider> loadCached(@Nullable Path binPath) {
+    if (cache.isEmpty()) {
+      return Optional.empty();
+    }
+    var cacheRef = cache.get();
+    return PlatformContextCache.resolveBinDir(binPath).flatMap(cacheRef::load);
+  }
+
+  private void storeCached(@Nullable Path binPath, ContextProvider provider) {
+    if (cache.isEmpty()) {
+      return;
+    }
+    var cacheRef = cache.get();
+    PlatformContextCache.resolveBinDir(binPath).ifPresent(binDir -> cacheRef.store(binDir, provider));
+  }
+
+  private static void logLoaded(ContextProvider provider) {
     LOGGER.info("Loaded {} platform contexts from 1C syntax helper",
       provider.getContexts().size());
-    return Optional.of(provider);
   }
 }

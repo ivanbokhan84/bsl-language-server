@@ -150,6 +150,9 @@ dependencies {
     // graphs
     implementation("org.jgrapht:jgrapht-core:1.5.3")
 
+    // дисковый кэш разобранного синтакс-помощника 1С (VANTEAM)
+    implementation("com.esotericsoftware:kryo:5.6.2")
+
     // SARIF serialization
     implementation("com.contrastsecurity:java-sarif:2.0")
 
