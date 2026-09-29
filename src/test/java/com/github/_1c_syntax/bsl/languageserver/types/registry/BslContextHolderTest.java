@@ -86,6 +86,37 @@ class BslContextHolderTest {
   }
 
   @Test
+  void getDoesNotRetryAfterOutOfMemoryError() throws IOException {
+    // given
+    when(factory.create()).thenThrow(new OutOfMemoryError("Java heap space"));
+    var holder = new BslContextHolder(factory);
+
+    // when
+    var first = holder.get();
+    var second = holder.get();
+
+    // then — Lazy не кэширует исключения, поэтому load() сам превращает Error в empty
+    assertThat(first).isEmpty();
+    assertThat(second).isEmpty();
+    verify(factory, times(1)).create();
+  }
+
+  @Test
+  void getDoesNotRetryAfterStackOverflowError() throws IOException {
+    // given
+    when(factory.create()).thenThrow(new StackOverflowError());
+    var holder = new BslContextHolder(factory);
+
+    // when
+    holder.get();
+    var second = holder.get();
+
+    // then
+    assertThat(second).isEmpty();
+    verify(factory, times(1)).create();
+  }
+
+  @Test
   void getReturnsEmptyOnUncheckedException() throws IOException {
     // given
     when(factory.create()).thenThrow(new RuntimeException("unexpected"));

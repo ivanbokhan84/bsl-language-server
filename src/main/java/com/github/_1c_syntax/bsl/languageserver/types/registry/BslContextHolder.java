@@ -43,7 +43,9 @@ import java.util.Optional;
  * <p>
  * Если 1С не установлена или парсинг падает — {@link #get()} возвращает
  * {@link Optional#empty()}, потребители работают через JSON-fallback.
- * Повторных попыток инициализации не делается.
+ * Повторных попыток инициализации не делается, в том числе после
+ * {@link OutOfMemoryError}, {@link StackOverflowError} и {@link LinkageError}:
+ * такие сбои пишутся в лог уровнем ERROR.
  */
 @Slf4j
 @Component
@@ -72,6 +74,12 @@ public class BslContextHolder {
       return factory.create();
     } catch (Exception e) {
       LOGGER.warn("Failed to load platform contexts from 1C syntax helper: {}", e.getMessage());
+      return Optional.empty();
+    } catch (OutOfMemoryError | StackOverflowError | LinkageError e) {
+      // Lazy не запоминает брошенное исключение: без этого перехвата каждый следующий get()
+      // заново запускал бы полный разбор справки и снова упирался бы в тот же предел.
+      LOGGER.error("Failed to load platform contexts from 1C syntax helper, "
+        + "platform context is disabled for this workspace: {}", e.toString());
       return Optional.empty();
     }
   }
