@@ -44,6 +44,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -72,6 +73,9 @@ import static picocli.CommandLine.Option;
  * выполнения анализа. Может быть указано более одного ключа. Если параметр опущен,
  * то вывод результата будет призведен в консоль.
  * -q, (--silent)              -       Флаг для отключения вывода прогресс-бара и дополнительных сообщений в консоль
+ * -t, (--target) &lt;arg&gt; -        Файл из каталога исходных файлов, по которому строится отчёт. Можно указать
+ * несколько раз. Остальные файлы каталога участвуют в анализе как контекст, но диагностики по ним не
+ * вычисляются. Если параметр опущен, отчёт строится по всем файлам каталога.
  * Выводимая информация:
  * Выполняет анализ каталога исходных файлов и генерацию файлов отчета. Для каждого указанного ключа "Репортера"
  * создается отдельный файл (каталог файлов). Реализованные "репортеры" находятся в пакете "reporter".
@@ -139,6 +143,13 @@ public class AnalyzeCommand implements Callable<Integer> {
     description = "Silent mode")
   private boolean silentMode;
 
+  @Option(
+    names = {"-t", "--target"},
+    paramLabel = "<path>",
+    description = "Report diagnostics only for this source file (repeatable); "
+      + "other files of the source directory are analyzed as context")
+  private String[] targetOptions = {};
+
   private final ReportersAggregator aggregator;
   private final GlobalLanguageServerConfiguration globalConfiguration;
   private final ServerContextProvider serverContextProvider;
@@ -182,6 +193,10 @@ public class AnalyzeCommand implements Callable<Integer> {
 
     try (var ctx = WorkspaceContextHolder.forUri(srcDir.toUri())) {
       var files = new ArrayList<>(BSLFiles.listBslFiles(srcDir, configuration.getExcludePaths()));
+      var targets = selectTargets(files, srcDir);
+      if (targets.isEmpty() && targetOptions.length > 0) {
+        return 1;
+      }
 
       serverContext.populateContext(files);
 
@@ -192,18 +207,18 @@ public class AnalyzeCommand implements Callable<Integer> {
       List<FileInfo> fileInfos;
       if (silentMode) {
         fileInfos = cliExecutor.submit(() ->
-          files.parallelStream()
+          targets.parallelStream()
             .map((File file) -> getFileInfoFromFile(workspaceDir, file, metricCalculationRequired))
             .toList()
         ).get();
       } else {
         try (ProgressBar pb = new ProgressBarBuilder()
           .setTaskName("Analyzing files...")
-          .setInitialMax(files.size())
+          .setInitialMax(targets.size())
           .setStyle(ProgressBarStyle.ASCII)
           .build()) {
           fileInfos = cliExecutor.submit(() ->
-            files.parallelStream()
+            targets.parallelStream()
               .map((File file) -> {
                 pb.step();
                 return getFileInfoFromFile(workspaceDir, file, metricCalculationRequired);
@@ -227,6 +242,35 @@ public class AnalyzeCommand implements Callable<Integer> {
 
   public String[] getReportersOptions() {
     return reportersOptions.clone();
+  }
+
+  /**
+   * Файлы, по которым строится отчёт: все файлы каталога либо файлы из {@code --target}
+   * в порядке указания, без повторов.
+   *
+   * @param files файлы каталога исходных файлов (после {@code excludePaths})
+   * @param srcDir каталог исходных файлов
+   * @return цели отчёта; пустой список, если хотя бы одна цель не входит в {@code files}
+   */
+  private List<File> selectTargets(List<File> files, Path srcDir) {
+    if (targetOptions.length == 0) {
+      return files;
+    }
+    var filesByPath = new HashMap<Path, File>();
+    files.forEach((File file) -> filesByPath.putIfAbsent(Absolute.path(file), file));
+    var targets = new ArrayList<File>();
+    for (var targetOption : targetOptions) {
+      var targetPath = Absolute.path(targetOption);
+      var target = filesByPath.get(targetPath);
+      if (target == null) {
+        LOGGER.error("Target file `{}` is not among source files of `{}`", targetPath, srcDir);
+        return List.of();
+      }
+      if (!targets.contains(target)) {
+        targets.add(target);
+      }
+    }
+    return targets;
   }
 
   private FileInfo getFileInfoFromFile(Path srcDir, File file, boolean metricCalculationRequired) {

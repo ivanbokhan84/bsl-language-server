@@ -220,7 +220,7 @@ To run in analyzer mode use parameter `--analyze` (short `-a`).
 
 ```sh
 Usage: bsl-language-server analyze [-hq] [-c=<path>] [-o=<path>] [-s=<path>]
-                                   [-r=<keys>]...
+                                   [-r=<keys>]... [-t=<path>]...
 Run analysis and get diagnostic info
   -c, --configuration=<path>
                            Path to language server configuration file
@@ -229,11 +229,15 @@ Run analysis and get diagnostic info
   -q, --silent             Silent mode
   -r, --reporter=<keys>    Reporter key (console, junit, json, tslint, generic)
   -s, --srcDir=<path>      Source directory
+  -t, --target=<path>      Report diagnostics only for this source file
+                             (repeatable); other files of the source directory
+                             are analyzed as context
   -w, --workspaceDir=<path> 
                            Workspace directory
 ```
 
 To set source code folder for analysis use parameter `--srcDir` (short `-s`) followed by the path (relative or absolute) to the source code folder. 
+Parameter `--target` (short `-t`) limits the report to the given files of the source folder: the other files of the folder are still analyzed as context (cross-module references, types), but their diagnostics are not computed. The parameter may be repeated. If a target is not among the analyzed files of the folder (including files excluded by `excludePaths`), the analysis exits with code 1.
 To generate an analysis report you need to specify one or more reporters. To specify reporter use parameter `--reporter` or `-r`, followed by reporter key. You may specify several reporters. The list of reporters see in section  **Reporters**.
 
 Command line example to run analysis:

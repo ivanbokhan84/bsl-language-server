@@ -220,7 +220,7 @@ java -Xmx4g -jar bsl-language-server.jar ...остальные параметр�
 
 ```sh
 Usage: bsl-language-server analyze [-hq] [-c=<path>] [-o=<path>] [-s=<path>]
-                                   [-r=<keys>]...
+                                   [-r=<keys>]... [-t=<path>]...
 Run analysis and get diagnostic info
   -c, --configuration=<path>
                            Path to language server configuration file
@@ -229,11 +229,15 @@ Run analysis and get diagnostic info
   -q, --silent             Silent mode
   -r, --reporter=<keys>    Reporter key (console, junit, json, tslint, generic)
   -s, --srcDir=<path>      Source directory
+  -t, --target=<path>      Report diagnostics only for this source file
+                             (repeatable); other files of the source directory
+                             are analyzed as context
   -w, --workspaceDir=<path> 
                            Workspace directory
 ```
 
 Для указания каталога расположения анализируемых исходников используется параметр `--srcDir` (сокращенно `-s`), за которым следует путь (относительный или абсолютный) к каталогу исходников. 
+Параметр `--target` (сокращенно `-t`) ограничивает отчёт указанными файлами каталога исходников: остальные файлы каталога участвуют в анализе как контекст (межмодульные ссылки, типы), но диагностики по ним не вычисляются. Параметр можно указать несколько раз. Если цель не входит в анализируемые файлы каталога (в том числе исключена `excludePaths`), анализ завершается с кодом 1.
 Для формирования отчета об анализе требуется указать один из "репортеров". Для указания репортера используется параметр `--reporter` (сокращенно `-r`), за которым следует ключ репортера. Допустимо указывать несколько репортеров. Список репортетов см. в разделе **Репортеры**.
 
 Пример строки запуска анализа:
