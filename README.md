@@ -48,6 +48,7 @@ Median CPU / wall seconds per check, seven scenarios, a new JVM per run, a warm-
 - The fork is faster than 0.29.0 in wall time in all seven scenarios and uses no more CPU in six of them. It still needs ×1.1–1.6 the memory of 0.29.0, which does not load the helper at all.
 - One launch over N modules: the fixed part is about 19 s of CPU against 62 s for stock 1.0.7, each extra module adds 0.6–0.7 s.
 - Stock 1.0.7 needs `-Xmx1g` for about 600 modules: with 512 MiB it fails with `OutOfMemoryError`.
+- The full upstream test suite passes on the fork: 3,666 tests, 0 failures, 31 skipped (mostly tests that need the 1C syntax helper).
 
 Method, charts and the cache invalidation checks are on the [project page](https://ivanbokhan84.github.io/bsl-language-server/); the full story in Russian is in [docs/vanteam/bsl-check-optimization.md](docs/vanteam/bsl-check-optimization.md).
 
