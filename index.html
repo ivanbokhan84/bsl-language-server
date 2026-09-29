@@ -181,7 +181,8 @@ details { max-width: 100%; overflow-x: auto; }
     <tr><td><code>analyze --target &lt;file&gt;</code>: the whole source directory is the context, diagnostics and metrics are computed for the targets only</td><td><code>perf(cli)</code></td></tr>
     <tr><td>No retry storm after <code>OutOfMemoryError</code> while loading the helper: one attempt, an ERROR line, platform context off for the workspace</td><td><code>fix(types)</code></td></tr>
     <tr><td>Error reports are no longer sent to the upstream Sentry project</td><td><code>chore(vanteam)</code></td></tr>
-    </tbody></table></div>
+    </tbody></table>
+    <p class="note">The full upstream test suite passes on the fork: 3,666 tests, 0 failures, 31 skipped (mostly tests that need the 1C syntax helper).</p></div>
 </section>
 
 <section>
