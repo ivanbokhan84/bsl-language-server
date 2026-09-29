@@ -6,6 +6,7 @@
   <a href="https://github.com/1c-syntax/bsl-language-server"><img src="https://img.shields.io/badge/upstream-1c--syntax%2Fbsl--language--server-blue" alt="Upstream" /></a>
   <a href="COPYING.md"><img src="https://img.shields.io/badge/license-LGPL--3.0--or--later-green" alt="License: LGPL-3.0-or-later" /></a>
   <a href="https://github.com/1c-syntax/bsl-language-server/releases/tag/v1.0.7"><img src="https://img.shields.io/badge/based%20on-v1.0.7-lightgrey" alt="Based on v1.0.7" /></a>
+  <a href="https://github.com/ivanbokhan84/bsl-language-server/releases/tag/v1.0.7-vanteam.1"><img src="https://img.shields.io/badge/release-1.0.7--vanteam.1-orange" alt="Release 1.0.7-vanteam.1" /></a>
 </div>
 <br/>
 
@@ -56,13 +57,15 @@ Method, charts and the cache invalidation checks are on the [project page](https
 
 JDK 21 is required. The command line and the report formats are those of BSL Language Server.
 
+Download: [bsl-language-server-1.0.7-vanteam.1-exec.jar](https://github.com/ivanbokhan84/bsl-language-server/releases/download/v1.0.7-vanteam.1/bsl-language-server-1.0.7-vanteam.1-exec.jar) (SHA-256 `0b75fa1235513d970a4125f172dd4515e82b8f30a3f80836991f530ef02c205b`), or build it:
+
 ```sh
 git clone -b vanteam-bsl-1.1 https://github.com/ivanbokhan84/bsl-language-server.git
 cd bsl-language-server
 ./gradlew bootJar                      # build/libs/bsl-language-server-*-exec.jar
 
 # optional: an AppCDS archive of the extracted JAR, trained once
-java -Djarmode=tools -jar build/libs/bsl-language-server-*-exec.jar extract --destination bslls
+java -Djarmode=tools -jar bsl-language-server-1.0.7-vanteam.1-exec.jar extract --destination bslls
 java -XX:ArchiveClassesAtExit=bslls.jsa -jar bslls/bsl-language-server-*-exec.jar --analyze --srcDir src --silent
 
 java -XX:SharedArchiveFile=bslls.jsa -XX:TieredStopAtLevel=1 -XX:ActiveProcessorCount=4 \
