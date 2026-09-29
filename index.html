@@ -151,7 +151,7 @@ details { max-width: 100%; overflow-x: auto; }
 <header class="hero" id="cover">
   <div class="left">
     <div>
-      <div class="kicker">Java · LGPL-3.0 · fork of BSL Language Server 1.0.7</div>
+      <div class="kicker">Java · LGPL-3.0 · release 1.0.7-vanteam.1</div>
       <h1>VANTEAM BSL Language Server</h1>
       <p class="tag">BSL Language Server 1.0.7 that checks a 1C module about as cheaply as 0.29 did, with every 1.0.7 finding intact.</p>
     </div>
@@ -244,12 +244,11 @@ details { max-width: 100%; overflow-x: auto; }
 <section>
   <div class="head"><div class="eyebrow">Use it</div><h2 class="t">Build and run</h2>
   <p>JDK 21. The command line and the report formats are those of BSL Language Server; the cache is on by default and lives next to the upstream cache unless <code>app.platform-context.cache.path</code> points elsewhere.</p></div>
-  <pre class="block">git clone -b vanteam-bsl-1.1 https://github.com/ivanbokhan84/bsl-language-server.git
-cd bsl-language-server
-./gradlew bootJar
+  <pre class="block"># the release JAR (SHA-256 0b75fa12…c205b), or build it: git clone -b vanteam-bsl-1.1 … &amp;&amp; ./gradlew bootJar
+curl -LO https://github.com/ivanbokhan84/bsl-language-server/releases/download/v1.0.7-vanteam.1/bsl-language-server-1.0.7-vanteam.1-exec.jar
 
 # optional: an AppCDS archive of the extracted JAR, trained once
-java -Djarmode=tools -jar build/libs/bsl-language-server-*-exec.jar extract --destination bslls
+java -Djarmode=tools -jar bsl-language-server-1.0.7-vanteam.1-exec.jar extract --destination bslls
 java -XX:ArchiveClassesAtExit=bslls.jsa -jar bslls/bsl-language-server-*-exec.jar --analyze --srcDir src --silent
 
 java -XX:SharedArchiveFile=bslls.jsa -XX:TieredStopAtLevel=1 -XX:ActiveProcessorCount=4 \
@@ -258,6 +257,7 @@ java -XX:SharedArchiveFile=bslls.jsa -XX:TieredStopAtLevel=1 -XX:ActiveProcessor
      --srcDir src --target src/CommonModules/Module1/Ext/Module.bsl --reporter json</pre>
   <p class="note">Russian-only helper: point <code>v8platform.binPath</code> to a directory with copies of <code>shcntx_ru.hbk</code>, <code>shlang_ru.hbk</code> and <code>shlang_root.hbk</code> (no <code>shcntx_root.hbk</code>). The English helper is skipped; findings stayed identical on 79,511 diagnostics of two real configurations.</p>
   <div class="links">
+    <a href="https://github.com/ivanbokhan84/bsl-language-server/releases/tag/v1.0.7-vanteam.1">Download 1.0.7-vanteam.1</a>
     <a href="https://github.com/ivanbokhan84/bsl-language-server">Repository</a>
     <a href="https://github.com/ivanbokhan84/bsl-language-server/blob/vanteam-bsl-1.1/docs/vanteam/README.md">Fork notes</a>
     <a href="https://github.com/ivanbokhan84/bsl-language-server/blob/vanteam-bsl-1.1/docs/vanteam/bsl-check-optimization.md">Article (ru)</a>
